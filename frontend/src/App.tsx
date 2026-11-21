@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { ShieldCheck, ShieldAlert, ScanLine, Activity, Database, LockKeyhole, Search, ChevronRight, CircleHelp, RefreshCw, AlertTriangle, CheckCircle2, Clock3, BarChart3 } from 'lucide-react';
 
-const API = 'http://localhost:8000';
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 type Result = {category:string; confidence:number; risk_score:number; risk_level:string; action:string; explanation:string; probabilities:Record<string,number>};
 type Event = {id:number;timestamp:string;prompt_preview:string;category:string;confidence:number;risk_score:number;risk_level:string;action:string};
 type Evaluation = {available:boolean;test_size?:number;accuracy?:number;labels?:string[];per_class?:Record<string,{precision:number;recall:number;f1:number;support:number}>;confusion_matrix?:number[][]};
@@ -39,7 +38,7 @@ export default function App(){
       const r=await fetch(API+'/api/classify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:value})});
       const data=await r.json();if(!r.ok)throw new Error(data.detail||'Classification failed');
       setResult(data);refresh();
-    }catch(e:any){setError(e.message||'Could not connect to backend. Start the app using start.bat.')}
+    }catch(e:any){setError(e.message||'Could not connect to backend. Please wait a moment if the server is waking up.')}
     finally{setLoading(false)}
   }
   const percent=(v:number)=>`${Math.round(v*100)}%`;
@@ -64,7 +63,7 @@ export default function App(){
           <div className="stat"><div className="stat-icon purple"><Database size={18}/></div><div><small>DATASET EXAMPLES</small><strong>{dataset?.rows??'—'}</strong></div></div>
         </section>
         {tab==='scanner'&&<div className="scan-layout">
-          <section className="panel scanner"><div className="panel-head"><div><div className="eyebrow">INPUT ANALYSIS</div><h2>Prompt Scanner</h2></div><span className="tag"><span/> READY TO SCAN</span></div><label htmlFor="prompt">ENTER PROMPT TO CLASSIFY</label><textarea id="prompt" value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Paste a prompt here to inspect it for injection attempts, jailbreaks, or data exfiltration..." maxLength={5000}/><div className="input-foot"><span>{prompt.length}/5000 characters</span><span>Text is processed by your local backend</span></div><button className="primary" disabled={loading||prompt.trim().length<3||!online} onClick={()=>scan()}>{loading?<><RefreshCw className="spin" size={18}/> ANALYZING PROMPT</>:<><ScanLine size={18}/> ANALYZE PROMPT <ChevronRight size={17}/></>}</button>
+          <section className="panel scanner"><div className="panel-head"><div><div className="eyebrow">INPUT ANALYSIS</div><h2>Prompt Scanner</h2></div><span className="tag"><span/> READY TO SCAN</span></div><label htmlFor="prompt">ENTER PROMPT TO CLASSIFY</label><textarea id="prompt" value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Paste a prompt here to inspect it for injection attempts, jailbreaks, or data exfiltration..." maxLength={5000}/><div className="input-foot"><span>{prompt.length}/5000 characters</span><span>Text is processed by the GuardPost ML backend</span></div><button className="primary" disabled={loading||prompt.trim().length<3||!online} onClick={()=>scan()}>{loading?<><RefreshCw className="spin" size={18}/> ANALYZING PROMPT</>:<><ScanLine size={18}/> ANALYZE PROMPT <ChevronRight size={17}/></>}</button>
             <div className="examples"><div className="example-title">TRY AN EXAMPLE <span>Click to load</span></div><div className="chips">{examples.map(x=><button key={x.label} onClick={()=>setPrompt(x.text)}>{x.label}</button>)}</div></div>
             {error&&<div className="error"><AlertTriangle size={17}/>{error}</div>}
           </section>

@@ -25,6 +25,13 @@ def test_safe_example_is_classified():
     assert result["category"] == "safe"
     assert result["action"] == "ALLOW"
 
+def test_general_knowledge_moon_question_is_classified_safe():
+    model = PromptClassifier()
+    model.train()
+    result = model.predict("Who was the first person who stepped on moon")
+    assert result["category"] == "safe"
+    assert result["action"] == "ALLOW"
+
 def test_evaluation_is_unavailable_for_single_example_per_label(monkeypatch, tmp_path):
     from backend import classifier as classifier_module
 
